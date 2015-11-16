@@ -22,6 +22,6 @@ missing
 stamp-h1
 config.h
 config.h.in
-m4/
 ltmain.sh
 libtool
+m4/
