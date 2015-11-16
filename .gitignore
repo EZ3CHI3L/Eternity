@@ -1,14 +1,27 @@
-# http://www.gnu.org/software/automake
+#Object files
+*.o
 
+#swp files
+*.swp
+
+#Executable
+eternity
+
+#Autotools stuff
 Makefile.in
-
-# http://www.gnu.org/software/autoconf
-
-/autom4te.cache
-/aclocal.m4
-/compile
-/configure
-/depcomp
-/install-sh
-/missing
-/stamp-h1
+Makefile
+*.Po
+config.*
+autom4te.cache
+aclocal.m4
+compile
+configure
+depcomp
+install-sh
+missing
+stamp-h1
+config.h
+config.h.in
+m4/
+ltmain.sh
+libtool
