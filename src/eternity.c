@@ -3,6 +3,7 @@
 #include <inttypes.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <argp.h>
 #include "eternity.h"
 #include "error.h"
 #define STB_IMAGE_IMPLEMENTATION
@@ -11,8 +12,15 @@
 
 int main(int argc, char *argv[])
 {
-    if (argc != 2)
-        DIE("%s\n", "single files for now");
+    struct argp_option options[] =
+    {
+        {0}
+    };
+
+    struct argp argp = {options, parse_opt, "[FILE]"};
+
+    int arg_count = 1;
+    argp_parse(&argp, argc, argv, 0, 0, &arg_count);
 
     GLuint width = 0, height = 0, bpp = 0;
     unsigned char *image_raw;
@@ -190,4 +198,24 @@ void eternity_cleanup(GLFWwindow *window)
 {
     glfwDestroyWindow(window);
     glfwTerminate();
+}
+
+static int parse_opt(int key, char *arg, struct argp_state *state)
+{
+    int *arg_count = state->input;
+
+    switch (key)
+    {
+        case ARGP_KEY_ARG:
+            --(*arg_count);
+            break;
+
+        case ARGP_KEY_END:
+            if (*arg_count > 0)
+                argp_failure(state, 1, 0, "too few arguments");
+            else if (*arg_count < 0)
+                argp_failure(state, 1, 0, "too many arguments");
+            break;
+    }
+    return 0;
 }
