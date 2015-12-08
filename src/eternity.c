@@ -22,10 +22,10 @@ int main(int argc, char *argv[])
     int arg_count = 1;
     argp_parse(&argp, argc, argv, 0, 0, &arg_count);
 
-    GLuint width = 0, height = 0, bpp = 0;
+    GLuint image_width = 0, image_height = 0, bpp = 0;
     unsigned char *image_raw;
 
-    if ((image_raw = stbi_load(argv[1], &width, &height, &bpp, STBI_rgb_alpha)) == NULL)
+    if ((image_raw = stbi_load(argv[1], &image_width, &image_height, &bpp, STBI_rgb_alpha)) == NULL)
         DIE("stbi error: %s\n", stbi_failure_reason());
 
     uint8_t rv;
@@ -34,10 +34,15 @@ int main(int argc, char *argv[])
 
     glfwSetErrorCallback(glfw_error_callback);
 
+    GLFWmonitor *primary = glfwGetPrimaryMonitor();
+    const GLFWvidmode *mode = glfwGetVideoMode(primary);
+    const GLuint screen_width = mode->width, screen_height = mode->height;
+
+    GLuint window_width = image_width, window_height = image_height;
     GLFWwindow *window;
     if (!(window = glfwCreateWindow(
-                    width,
-                    height,
+                    image_width < screen_width ? image_width : screen_width,
+                    image_height < screen_height ? image_height : screen_height,
                     "Eternity",
                     NULL,
                     NULL)))
@@ -47,6 +52,7 @@ int main(int argc, char *argv[])
     }
 
     glfwMakeContextCurrent(window);
+    /* glfwSetWindowPos(window, screen_width/2 - image_width/2, screen_height/2 - image_height/2); Do not uncomment this */
     glfwSetKeyCallback(window, glfw_key_callback);
     glewExperimental = GL_TRUE;
 
@@ -86,7 +92,11 @@ int main(int argc, char *argv[])
     setup_vao(&vao);
 
     GLuint shader_program = 0;
-    setup_shaders(&shader_program);
+    if (setup_shaders(&shader_program))
+    {
+        eternity_cleanup(window);
+        DIE("%s\n", "shader compilation failed");
+    }
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_SHORT, GL_FALSE, 0, NULL);
@@ -103,7 +113,7 @@ int main(int argc, char *argv[])
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_raw);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_width, image_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_raw);
     stbi_image_free(image_raw);
 
     check_error();
@@ -134,7 +144,7 @@ void setup_vao(GLuint *vao)
     glBindVertexArray(*vao);
 }
 
-void setup_shaders(GLuint *shader_program)
+uint8_t setup_shaders(GLuint *shader_program)
 {
     const GLchar *vs_source =
         "#version 440\n"
@@ -150,12 +160,30 @@ void setup_shaders(GLuint *shader_program)
         "uniform sampler2D texture;"
         "void main() { frag_color = texture2D(texture, texcoord); }";
 
+    GLint compile_ok = GL_FALSE;
+
     GLuint vs = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vs, 1, &vs_source, NULL);
     glCompileShader(vs);
+
+    glGetShaderiv(vs, GL_COMPILE_STATUS, &compile_ok);
+    if (compile_ok != GL_TRUE)
+    {
+        glDeleteShader(vs);
+        return 1;
+    }
+
     GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fs, 1, &fs_source, NULL);
     glCompileShader(fs);
+
+    glGetShaderiv(fs, GL_COMPILE_STATUS, &compile_ok);
+    if (compile_ok != GL_TRUE)
+    {
+        glDeleteShader(fs);
+        return 1;
+    }
+
     *shader_program = glCreateProgram();
     glAttachShader(*shader_program, fs);
     glAttachShader(*shader_program, vs);
