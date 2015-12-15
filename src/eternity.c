@@ -52,7 +52,6 @@ int main(int argc, char *argv[])
     }
 
     glfwMakeContextCurrent(window);
-    /* glfwSetWindowPos(window, screen_width/2 - image_width/2, screen_height/2 - image_height/2); Do not uncomment this */
     glfwSetKeyCallback(window, glfw_key_callback);
     glewExperimental = GL_TRUE;
 
