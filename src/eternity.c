@@ -10,6 +10,8 @@
 #define STBI_FAILURE_USERMSG
 #include "stb_image.h"
 
+// test
+
 int main(int argc, char *argv[])
 {
     struct argp_option options[] =
