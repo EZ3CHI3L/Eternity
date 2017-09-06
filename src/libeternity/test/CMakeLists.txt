@@ -1,0 +1,11 @@
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
+add_definitions(-DUNIT_TESTING)
+add_executable(test_args test_args.c)
+set_target_properties(test_args PROPERTIES LINK_FLAGS "-Wl,--wrap=argp_parse,\
+--wrap=argp_usage")
+target_link_libraries(test_args libeternity cmocka)
+add_test(NAME test_args COMMAND test_args)
+add_executable(test_util test_util.c)
+set_target_properties(test_util PROPERTIES LINK_FLAGS "-Wl,--wrap=malloc")
+target_link_libraries(test_util libeternity cmocka)
+add_test(NAME test_util COMMAND test_util)
