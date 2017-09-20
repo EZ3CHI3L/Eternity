@@ -26,12 +26,13 @@ void parseArgs_argpSucceeds_return0(void **state)
     char *argv[argc];
     argv[0] = "eternity";
     argv[1] = "--help";
+    struct args args;
 
     expect_value(__wrap_argp_parse, argc, 2);
     expect_memory(__wrap_argp_parse, argv, &argv, sizeof(argv));
     will_return(__wrap_argp_parse, 0);
 
-    rv = parse_args(argc, argv);
+    rv = parse_args(argc, argv, &args);
 
     assert_int_equal(rv, 0);
 }
@@ -42,12 +43,13 @@ void parseArgs_argpFails_returnNeg1(void **state)
     char *argv[argc];
     argv[0] = "eternity";
     argv[1] = "--help";
+    struct args args;
 
     expect_value(__wrap_argp_parse, argc, 2);
     expect_memory(__wrap_argp_parse, argv, &argv, sizeof(argv));
     will_return(__wrap_argp_parse, -1);
 
-    rv = parse_args(argc, argv);
+    rv = parse_args(argc, argv, &args);
 
     assert_int_equal(rv, -1);
 }

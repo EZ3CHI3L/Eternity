@@ -1,7 +1,8 @@
 #ifndef UTIL_H
 #define UTIL_H
 #include <stdlib.h>
+#include "args.h"
 void *safe_malloc(size_t);
 void et_freep(void**);
-char *et_asprintf(const char*, ...);
+void et_cleanup(struct args*);
 #endif /* UTIL_H */

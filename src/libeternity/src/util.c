@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <errno.h>
+#include <libeternity/args.h>
 #include <libeternity/error.h>
 
 #ifdef __GNUC__
@@ -29,6 +30,12 @@ void et_freep(void **p)
     *p = NULL;
 }
 
+void et_cleanup(struct args *args)
+{
+    et_freep((void**) &args->file_list);
+}
+
+/*
 #ifdef __GNUC__
 __attribute__((format(__printf__, 1, 2)))
 #endif
@@ -56,3 +63,4 @@ char* et_asprintf(const char *fmt, ...)
 
     return p;
 }
+*/

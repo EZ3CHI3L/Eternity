@@ -29,12 +29,11 @@ error_t parse_opt(int key, char *arg, struct argp_state *state)
             break;
 
         case ARGP_KEY_ARG:
-            if (args->count-- < 0)
-                break;
+            args->file_list[args->file_count++] = arg;
             break;
 
         case ARGP_KEY_END:
-            if (state->arg_num < 1)
+            if (args->count < 2)
             {
                 argp_usage(state);
                 return 0;
@@ -48,7 +47,7 @@ error_t parse_opt(int key, char *arg, struct argp_state *state)
     return 0;
 }
 
-int parse_args(int argc, char **argv)
+int parse_args(int argc, char **argv, struct args *args)
 {
     int rv;
     const char* doc = "Eternity - your window to the good";
@@ -63,12 +62,8 @@ int parse_args(int argc, char **argv)
     };
 
     struct argp argp = {options, parse_opt, args_doc, doc, NULL, 0, NULL};
-    struct args args;
-    args.count = argc;
-    args.silent = args.verbose = 0;
-    args.output_file = "-";
 
-    rv = argp_parse(&argp, argc, argv, ARGP_NO_EXIT, NULL, &args);
+    rv = argp_parse(&argp, argc, argv, ARGP_NO_EXIT, NULL, args);
 
     if (rv > 0)
     {
