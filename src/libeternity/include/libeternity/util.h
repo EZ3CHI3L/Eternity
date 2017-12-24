@@ -5,4 +5,5 @@
 void *safe_malloc(size_t);
 void et_freep(void**);
 void et_cleanup(struct args*);
+void et_args_free(struct args*);
 #endif /* UTIL_H */

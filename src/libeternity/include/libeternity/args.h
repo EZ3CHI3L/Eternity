@@ -8,5 +8,5 @@ struct args
     char **file_list;
 };
 error_t parse_opt(int, char*, struct argp_state*);
-int parse_args(int, char**, struct args*);
+struct args *et_args_parse(int, char**);
 #endif /* ARGS_H */

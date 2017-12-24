@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <errno.h>
+#include <GLFW/glfw3.h>
 #include <libeternity/args.h>
 #include <libeternity/error.h>
 
@@ -30,9 +31,16 @@ void et_freep(void **p)
     *p = NULL;
 }
 
+void et_args_free(struct args *args)
+{
+    et_freep((void**)&args->file_list);
+    et_freep((void**)&args);
+}
+
 void et_cleanup(struct args *args)
 {
-    et_freep((void**) &args->file_list);
+    et_args_free(args);
+    glfwTerminate();
 }
 
 /*

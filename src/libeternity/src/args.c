@@ -4,6 +4,7 @@
 #include <argp.h>
 #include <errno.h>
 #include <libeternity/args.h>
+#include <libeternity/util.h>
 #include <config.h>
 
 /* argp requires these to be global */
@@ -47,11 +48,19 @@ error_t parse_opt(int key, char *arg, struct argp_state *state)
     return 0;
 }
 
-int parse_args(int argc, char **argv, struct args *args)
+struct args *et_args_parse(int argc, char **argv)
 {
     int rv;
     const char* doc = "Eternity - your window to the good";
     char args_doc[] = "file1.jpg file2.png file3.bmp ...";
+
+    int file_list_size = argc * sizeof(char*);
+    struct args *args = safe_malloc(sizeof(struct args));
+    args->count = argc;
+    args->silent = args->verbose = 0;
+    args->output_file = "-";
+    args->file_count = 0;
+    args->file_list = safe_malloc(file_list_size);
 
     struct argp_option options[] = {
         {"verbose",'v', 0, 0, "Produce verbose output", 0},
@@ -65,15 +74,13 @@ int parse_args(int argc, char **argv, struct args *args)
 
     rv = argp_parse(&argp, argc, argv, ARGP_NO_EXIT, NULL, args);
 
-    if (rv > 0)
+    if (rv != 0)
     {
         errno = rv;
         perror("argp_parse");
-        return -1;
+        et_freep((void**) &args);
+        return NULL;
     }
 
-    if (rv < 0)
-        return -1;
-
-    return 0;
+    return args;
 }

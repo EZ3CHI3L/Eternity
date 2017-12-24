@@ -1,32 +1,47 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <GLFW/glfw3.h>
 #include <libeternity/args.h>
+#include <libeternity/engine.h>
+#include <libeternity/io.h>
 #include <libeternity/util.h>
+#include <libeternity/error.h>
 
 int main(int argc, char **argv)
 {
-    int file_list_size = argc * sizeof(char*);
-    struct args args;
-    args.count = argc;
-    args.silent = args.verbose = 0;
-    args.output_file = "-";
-    args.file_count = 0;
-    args.file_list = safe_malloc(file_list_size);
-    memset(args.file_list, 0, file_list_size);
-
     int rv;
-    rv = parse_args(argc, argv, &args);
 
-    if (rv == -1)
+    struct args *args = et_args_parse(argc, argv);
+
+    if (args == NULL)
     {
-        et_cleanup(&args);
+        et_cleanup(args);
         return EXIT_FAILURE;
     }
 
-    for (int i = 0; i < args.file_count; ++i)
-        printf("%s\n", args.file_list[i]);
+    GLFWwindow *window;
+    rv = et_engine_init(&window);
+    if (!rv)
+    {
+        et_args_free(args);
+        return EXIT_FAILURE;
+    }
 
-    et_cleanup(&args);
+    rv = et_image_load(args->file_list[0]);
+    if(!rv)
+    {
+        et_cleanup(args);
+        return EXIT_FAILURE;
+    }
+
+    rv = et_engine_run(window);
+    if (!rv)
+    {
+        et_cleanup(args);
+        return EXIT_FAILURE;
+    }
+
+    et_cleanup(args);
     return EXIT_SUCCESS;
 }
