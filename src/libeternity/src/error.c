@@ -23,40 +23,40 @@ void glfw_error_callback(int error, const char* description)
 void et_err_check(void)
 {
     GLenum error_code;
-    while ((error_code = glGetError() != GL_NO_ERROR))
+    while (((error_code = glGetError()) != GL_NO_ERROR))
     {
         switch (error_code)
         {
             case GL_NO_ERROR:
-                ERR_LOG("OpenGL: %s\n", "GL_NO_ERROR");
+                fprintf(stderr, "GL_NO_ERROR\n");
                 break;
 
             case GL_INVALID_ENUM:
-                ERR_LOG("OpenGL: %s\n", "GL_INVALID_ENUM");
+                fprintf(stderr, "GL_INVALID_ENUM\n");
                 break;
 
             case GL_INVALID_VALUE:
-                ERR_LOG("OpenGL: %s\n", "OpenGL: GL_INVALID_VALUE");
+                fprintf(stderr, "OpenGL: GL_INVALID_VALUE\n");
                 break;
 
             case GL_INVALID_OPERATION:
-                ERR_LOG("OpenGL: %s\n", "GL_INVALID_OPERATION");
+                fprintf(stderr, "GL_INVALID_OPERATION\n");
                 break;
 
             case GL_INVALID_FRAMEBUFFER_OPERATION:
-                ERR_LOG("OpenGL: %s\n", "GL_INVALID_FRAMEBUFFER_OPERATION");
+                fprintf(stderr, "GL_INVALID_FRAMEBUFFER_OPERATION\n");
                 break;
 
             case GL_OUT_OF_MEMORY:
-                ERR_LOG("OpenGL: %s\n", "GL_OUT_OF_MEMORY");
+                fprintf(stderr, "GL_OUT_OF_MEMORY\n");
                 break;
 
             case GL_STACK_UNDERFLOW:
-                ERR_LOG("OpenGL: %s\n", "GL_STACK_UNDERFLOW");
+                fprintf(stderr, "GL_STACK_UNDERFLOW\n");
                 break;
 
             case GL_STACK_OVERFLOW:
-                ERR_LOG("OpenGL: %s\n", "GL_STACK_OVERFLOW");
+                fprintf(stderr, "GL_STACK_OVERFLOW\n");
                 break;
         }
     }

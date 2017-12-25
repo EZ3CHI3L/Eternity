@@ -20,9 +20,11 @@ int et_image_load(char *filename)
 
     if (!image)
     {
-        fprintf(stderr, "Could not load image %s\n", filename);
+        fprintf(stderr, "[ STBI ] Could not load image %s\n", filename);
         return 0;
     }
+
+    printf("[ STBI ] loaded %s\n", filename);
 
     stbi_image_free(image);
     return 1;

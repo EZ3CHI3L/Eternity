@@ -61,6 +61,7 @@ struct args *et_args_parse(int argc, char **argv)
     args->output_file = "-";
     args->file_count = 0;
     args->file_list = safe_malloc(file_list_size);
+    args->file_list[0] = NULL;
 
     struct argp_option options[] = {
         {"verbose",'v', 0, 0, "Produce verbose output", 0},
@@ -78,7 +79,7 @@ struct args *et_args_parse(int argc, char **argv)
     {
         errno = rv;
         perror("argp_parse");
-        et_freep((void**) &args);
+        et_args_free(args);
         return NULL;
     }
 

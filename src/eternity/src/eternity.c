@@ -14,7 +14,11 @@ int main(int argc, char **argv)
 
     struct args *args = et_args_parse(argc, argv);
 
-    if (args == NULL)
+    if (args == NULL || args->file_list[0] == NULL)
+        return EXIT_FAILURE;
+
+    rv = et_image_load(args->file_list[0]);
+    if(!rv)
     {
         et_cleanup(args);
         return EXIT_FAILURE;
@@ -25,13 +29,6 @@ int main(int argc, char **argv)
     if (!rv)
     {
         et_args_free(args);
-        return EXIT_FAILURE;
-    }
-
-    rv = et_image_load(args->file_list[0]);
-    if(!rv)
-    {
-        et_cleanup(args);
         return EXIT_FAILURE;
     }
 
