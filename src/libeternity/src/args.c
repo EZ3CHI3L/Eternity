@@ -55,12 +55,12 @@ struct args *et_args_parse(int argc, char **argv)
     char args_doc[] = "file1.jpg file2.png file3.bmp ...";
 
     int file_list_size = argc * sizeof(char*);
-    struct args *args = safe_malloc(sizeof(struct args));
+    struct args *args = et_malloc(sizeof(struct args));
     args->count = argc;
     args->silent = args->verbose = 0;
     args->output_file = "-";
     args->file_count = 0;
-    args->file_list = safe_malloc(file_list_size);
+    args->file_list = et_malloc(file_list_size);
     args->file_list[0] = NULL;
 
     struct argp_option options[] = {

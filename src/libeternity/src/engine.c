@@ -2,25 +2,53 @@
 #include <stdlib.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <libeternity/args.h>
+#include <libeternity/engine.h>
 #include <libeternity/io.h>
+#include <libeternity/etmath.h>
+#include <libeternity/util.h>
 #include <libeternity/error.h>
 
-int et_engine_init(GLFWwindow **window)
+static void set_viewport(et_image *image, int width, int height)
 {
-    int rv, width = 640, height = 480, major, minor, revision;
+    const double aw = (double) width / (double) image->width;
+    const double ah = (double) height / (double) image->height;
+    const double a = aw > ah ? ah : aw;
+    unsigned int nw = image->width * a, nh = image->height * a;
+    nw = nw < (GLuint) image->width ? nw : (GLuint) image->width;
+    nh = nh < (GLuint) image->height ? nh : (GLuint) image->height;
+    glViewport((width - nw) / 2, (height - nh) / 2, nw, nh);
+}
+
+void glfw_framebuffer_size_callback(GLFWwindow *window,
+        int width, int height)
+{
+    et_image *image = glfwGetWindowUserPointer(window);
+
+    if (!window)
+        ERR_LOG("Could not get UserPointer");
+
+    set_viewport(image, width, height);
+}
+
+int et_engine_init(GLFWwindow **window, et_image *image)
+{
+    int rv, width = image->width, height = image->height, major, minor, rev;
     GLFWerrorfun callback = glfwSetErrorCallback(glfw_error_callback);
 
     rv = glfwInit();
     if (rv == GLFW_FALSE)
     {
-        ERR_LOG("%s\n", "Could not initialize glfw");
+        ERR_LOG("Could not initialize glfw");
         return 0;
     }
 
-    glfwGetVersion(&major, &minor, &revision);
+    const char *version_string = glfwGetVersionString();
+    glfwGetVersion(&major, &minor, &rev);
+    puts(version_string);
     printf("Compiled against GLFW %i.%i.%i\nRunning against GLFW %i.%i.%i\n",
             GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR, GLFW_VERSION_REVISION,
-            major, minor, revision);
+            major, minor, rev);
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -29,12 +57,13 @@ int et_engine_init(GLFWwindow **window)
     if (!*window)
     {
         glfwTerminate();
-        ERR_LOG("%s\n", "Could not create window");
+        ERR_LOG("Could not create window");
         return 0;
     }
 
     glfwMakeContextCurrent(*window);
     glfwSetKeyCallback(*window, glfw_key_callback);
+    glfwSetFramebufferSizeCallback(*window, glfw_framebuffer_size_callback);
     glfwSwapInterval(0);
 
     glewExperimental = GL_TRUE;
@@ -44,9 +73,11 @@ int et_engine_init(GLFWwindow **window)
     {
         glfwTerminate();
         fprintf(stderr, "GLEW [ %s ]\n", glewGetErrorString(err));
-        ERR_LOG("%s\n", "Could not load OpenGL extensions");
+        ERR_LOG("Could not load OpenGL extensions");
         return 0;
     }
+
+    glfwSetWindowUserPointer(*window, image);
 
     return 1;
 }
@@ -83,13 +114,19 @@ GLuint et_shader_load(void)
 {
     const GLchar *v_shader_source =
         "#version 330 core\n"
-        "layout(location = 0) in vec3 vpos;"
-        "void main() { gl_Position.xyz = vpos; }";
+        "in vec4 vcoords;"
+        "in vec2 tcoords;"
+        "out vec2 uvcoords;"
+        "uniform mat4 model, view, projection;"
+        "void main() { gl_Position = vcoords * model * view * projection;"
+        "uvcoords = tcoords; }";
 
     const GLchar *f_shader_source =
         "#version 330 core\n"
+        "in vec2 uvcoords;"
         "out vec4 color;"
-        "void main() { color = vec4(1.0, 1.0, 1.0, 1.0); }";
+        "uniform sampler2D sampler;"
+        "void main() { color = texture(sampler, uvcoords); }";
 
     GLuint vs = et_shader_compile(GL_VERTEX_SHADER, v_shader_source);
 
@@ -105,53 +142,98 @@ GLuint et_shader_load(void)
     glAttachShader(program, vs);
     glAttachShader(program, fs);
     glLinkProgram(program);
-    glUseProgram(program);
     glDeleteShader(vs);
     glDeleteShader(fs);
 
     return program;
 }
 
-GLuint et_vao_new(GLuint index)
+GLuint et_vao_new()
 {
     GLuint vao;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
-    glEnableVertexAttribArray(index);
-    glVertexAttribPointer(index, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 
     return vao;
 }
 
-GLuint et_vbo_new(GLfloat *vcoords, size_t size)
+GLuint et_buffer_new(GLenum target, GLfloat *data, size_t size)
 {
     GLuint vbo;
     glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, size, vcoords, GL_STATIC_DRAW);
+    glBindBuffer(target, vbo);
+    glBufferData(target, size, data, GL_STATIC_DRAW);
 
     return vbo;
 }
 
-int et_engine_run(GLFWwindow *window)
+GLuint et_texture_new(et_image *image)
+{
+    GLuint texture;
+    glGenTextures(1, &texture);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image->width, image->height,
+            0, GL_RGBA, GL_UNSIGNED_BYTE, image->data);
+
+    return texture;
+}
+
+int et_engine_run(GLFWwindow *window, et_image *image)
 {
     int rv;
-
     const char *gl_version = glGetString(GL_VERSION);
     const char *glsl_version = glGetString(GL_SHADING_LANGUAGE_VERSION);
     printf("OpenGL %s\nGLSL %s\n", gl_version, glsl_version);
 
-    GLfloat vcoords[] = {-1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f};
-    GLuint vbo = et_vbo_new(vcoords, sizeof(vcoords));
-    GLuint vao = et_vao_new(0);
+    GLuint vao = et_vao_new();
+
+    GLfloat vc[] = {-1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f};
+    GLfloat tc[] = {0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f};
+    GLuint vc_buffer = et_buffer_new(GL_ARRAY_BUFFER, vc, sizeof(vc));
+    GLuint tc_buffer = et_buffer_new(GL_ARRAY_BUFFER, tc, sizeof(tc));
+
     GLuint shader = et_shader_load();
 
     if (!shader)
     {
-        ERR_LOG("%s\n", "Could not load shaders");
+        ERR_LOG("Could not load shaders");
         et_err_check();
         return 0;
     }
+
+    et_m_stack m_stack;
+    rv = et_m_stack_init(&m_stack);
+
+    if (!rv)
+        return 0;
+
+    glUseProgram(shader);
+    GLint model, view, proj;
+
+    model = glGetUniformLocation(shader, "model");
+    glUniformMatrix4fv(model, 1, GL_FALSE, m_stack.model.data);
+
+    view = glGetUniformLocation(shader, "view");
+    glUniformMatrix4fv(view, 1, GL_FALSE, m_stack.view.data);
+
+    proj = glGetUniformLocation(shader, "projection");
+    glUniformMatrix4fv(proj, 1, GL_FALSE, m_stack.proj.data);
+
+    GLuint vc_index = glGetAttribLocation(shader, "vcoords");
+    glEnableVertexAttribArray(vc_index);
+    glBindBuffer(GL_ARRAY_BUFFER, vc_buffer);
+    glVertexAttribPointer(vc_index, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+
+    GLuint tc_index = glGetAttribLocation(shader, "tcoords");
+    glEnableVertexAttribArray(tc_index);
+    glBindBuffer(GL_ARRAY_BUFFER, tc_buffer);
+    glVertexAttribPointer(tc_index, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+
+    GLuint texture = et_texture_new(image);
+    et_image_free(image);
 
     et_err_check();
     while (!glfwWindowShouldClose(window))
@@ -162,6 +244,7 @@ int et_engine_run(GLFWwindow *window)
         glfwWaitEvents();
     }
 
+    et_m_stack_free(&m_stack);
     glDeleteProgram(shader);
     return 1;
 }

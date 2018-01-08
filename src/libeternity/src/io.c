@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <GLFW/glfw3.h>
+#include <libeternity/io.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include <libeternity/stb_image.h>
 
@@ -12,13 +13,12 @@ void glfw_key_callback(GLFWwindow* window,
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
 
-int et_image_load(char *filename)
+int et_image_load(et_image *image, const char *filename)
 {
-    unsigned char *image;
-    int width, height, bpp;
-    image = stbi_load(filename, &width, &height, &bpp, 0);
+    image->data = stbi_load(filename, &image->width,
+            &image->height, &image->bpp, STBI_rgb_alpha);
 
-    if (!image)
+    if (!image->data)
     {
         fprintf(stderr, "[ STBI ] Could not load image %s\n", filename);
         return 0;
@@ -26,6 +26,5 @@ int et_image_load(char *filename)
 
     printf("[ STBI ] loaded %s\n", filename);
 
-    stbi_image_free(image);
     return 1;
 }

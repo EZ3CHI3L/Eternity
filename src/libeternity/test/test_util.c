@@ -19,7 +19,7 @@ void safeMalloc_mallocFails_returnNull(void **state)
     expect_value(__wrap_malloc, n, 32);
     will_return(__wrap_malloc, (void*) NULL);
 
-    rv = safe_malloc(n);
+    rv = et_malloc(n);
 
     assert_null(rv);
 }

@@ -7,11 +7,11 @@
 #ifdef __GNUC__
 __attribute__ ((format(__printf__, 1, 2)))
 #endif
-void et_err_log(const char *format, ...)
+void et_err_log(const char *start, ...)
 {
     va_list vargs;
-    va_start(vargs, format);
-    vfprintf(stderr, format, vargs);
+    va_start(vargs, start);
+    vfprintf(stderr, start, vargs);
     va_end(vargs);
 }
 

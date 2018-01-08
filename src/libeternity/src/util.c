@@ -5,12 +5,16 @@
 #include <errno.h>
 #include <GLFW/glfw3.h>
 #include <libeternity/args.h>
+#include <libeternity/io.h>
+#include <libeternity/engine.h>
+#include <libeternity/etmath.h>
+#include <libeternity/stb_image.h>
 #include <libeternity/error.h>
 
 #ifdef __GNUC__
 __attribute__((malloc))
 #endif
-void *safe_malloc(size_t n)
+void *et_malloc(size_t n)
 {
     errno = 0;
     void *p = malloc(n);
@@ -18,7 +22,22 @@ void *safe_malloc(size_t n)
     if (!p)
     {
         perror(NULL);
-        fprintf(stderr, "Could not allocate %zu bytes\n", n);
+        ERR_LOG("Could not allocate %zu bytes", n);
+        return NULL;
+    }
+
+    return p;
+}
+
+void *et_calloc(size_t nmemb, size_t n)
+{
+    errno = 0;
+    void *p = calloc(nmemb, n);
+
+    if (!p)
+    {
+        perror(NULL);
+        ERR_LOG("Could not allocate %zu bytes", nmemb * n);
         return NULL;
     }
 
@@ -27,14 +46,34 @@ void *safe_malloc(size_t n)
 
 void et_freep(void **p)
 {
-    free(*p);
-    *p = NULL;
+    if (p && *p)
+    {
+        free(*p);
+        *p = NULL;
+    }
 }
 
 void et_args_free(struct args *args)
 {
     et_freep((void**)&args->file_list);
     et_freep((void**)&args);
+}
+
+void et_mat_free(et_mat *mat)
+{
+    et_freep((void**)&mat->data);
+}
+
+void et_m_stack_free(et_m_stack *stack)
+{
+    et_mat_free(&stack->model);
+    et_mat_free(&stack->view);
+    et_mat_free(&stack->proj);
+}
+
+void et_image_free(et_image *image)
+{
+    stbi_image_free(image->data);
 }
 
 void et_cleanup(struct args *args)

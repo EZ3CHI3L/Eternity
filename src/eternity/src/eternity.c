@@ -17,22 +17,24 @@ int main(int argc, char **argv)
     if (args == NULL || args->file_list[0] == NULL)
         return EXIT_FAILURE;
 
-    rv = et_image_load(args->file_list[0]);
+    et_image image;
+    rv = et_image_load(&image, args->file_list[0]);
     if(!rv)
-    {
-        et_cleanup(args);
-        return EXIT_FAILURE;
-    }
-
-    GLFWwindow *window;
-    rv = et_engine_init(&window);
-    if (!rv)
     {
         et_args_free(args);
         return EXIT_FAILURE;
     }
 
-    rv = et_engine_run(window);
+    GLFWwindow *window;
+    rv = et_engine_init(&window, &image);
+    if (!rv)
+    {
+        et_image_free(&image);
+        et_args_free(args);
+        return EXIT_FAILURE;
+    }
+
+    rv = et_engine_run(window, &image);
     if (!rv)
     {
         et_cleanup(args);
