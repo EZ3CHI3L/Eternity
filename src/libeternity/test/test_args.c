@@ -17,7 +17,6 @@ int __wrap_argp_parse(const struct argp *argp,
 void __wrap_argp_usage(struct argp_state *state)
 {
     assert_non_null(state);
-    check_expected(state);
 }
 
 void parseArgs_argpSucceeds_returnNonNull(void **state)
@@ -118,22 +117,6 @@ void parseOpt_oEncountered_setOutputFile(void **state)
     assert_int_equal(rv, 0);
 }
 
-void parseOpt_keyArgEncountered_decrementArgCount(void **state)
-{
-    int rv;
-    struct argp_state argp_state;
-    struct args args;
-    args.count = 4;
-    struct args *argsp = &args;
-    argp_state.input = (void *) argsp;
-
-    rv = parse_opt((int) ARGP_KEY_ARG, 0, &argp_state);
-    argsp = (struct args*) argp_state.input;
-
-    assert_int_equal(argsp->count, 3);
-    assert_int_equal(rv, 0);
-}
-
 void parseOpt_noArguments_printUsage(void **state)
 {
     int rv;
@@ -142,7 +125,6 @@ void parseOpt_noArguments_printUsage(void **state)
     struct args args;
     struct args *argsp = &args;
     argp_state.input = (void *) argsp;
-    expect_memory(__wrap_argp_usage, state, &argp_state, sizeof(argp_state));
 
     rv = parse_opt((int) ARGP_KEY_END, 0, &argp_state);
     argsp = (struct args*) argp_state.input;
@@ -161,7 +143,6 @@ int main(void)
         cmocka_unit_test(parseOpt_sEncountered_setSilentFlag),
         cmocka_unit_test(parseOpt_vEncountered_setVerboseFlag),
         cmocka_unit_test(parseOpt_oEncountered_setOutputFile),
-        cmocka_unit_test(parseOpt_keyArgEncountered_decrementArgCount),
         cmocka_unit_test(parseOpt_noArguments_printUsage),
     };
 
