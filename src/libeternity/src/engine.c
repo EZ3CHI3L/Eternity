@@ -184,9 +184,9 @@ GLuint et_texture_new(et_image *image)
 int et_engine_run(GLFWwindow *window, et_image *image)
 {
     int rv;
-    const char *gl_version = glGetString(GL_VERSION);
-    const char *glsl_version = glGetString(GL_SHADING_LANGUAGE_VERSION);
-    printf("OpenGL %s\nGLSL %s\n", gl_version, glsl_version);
+    const unsigned char *gl_ver = glGetString(GL_VERSION);
+    const unsigned char *glsl_ver = glGetString(GL_SHADING_LANGUAGE_VERSION);
+    printf("OpenGL %s\nGLSL %s\n", gl_ver, glsl_ver);
 
     GLuint vao = et_vao_new();
 
