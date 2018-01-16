@@ -56,7 +56,6 @@ void et_freep(void **p)
 void et_args_free(struct args *args)
 {
     et_freep((void**)&args->file_list);
-    et_freep((void**)&args);
 }
 
 void et_mat_free(et_mat *mat)

@@ -19,13 +19,13 @@ void __wrap_argp_usage(struct argp_state *state)
     assert_non_null(state);
 }
 
-void parseArgs_argpSucceeds_returnNonNull(void **state)
+void parseArgs_argpSucceeds_argsErrorZero(void **state)
 {
     int rv, argc = 2;
     char *argv[argc];
     argv[0] = "eternity";
     argv[1] = "--help";
-    struct args *args;
+    struct args args;
 
     expect_value(__wrap_argp_parse, argc, 2);
     expect_memory(__wrap_argp_parse, argv, &argv, sizeof(argv));
@@ -33,16 +33,16 @@ void parseArgs_argpSucceeds_returnNonNull(void **state)
 
     args = et_args_parse(argc, argv);
 
-    assert_non_null(args);
+    assert_int_equal(args.error, 0);
 }
 
-void parseArgs_argpFails_returnNull(void **state)
+void parseArgs_argpFails_argsErrorOne(void **state)
 {
     int rv, argc = 2;
     char *argv[argc];
     argv[0] = "eternity";
     argv[1] = "--help";
-    struct args *args;
+    struct args args;
 
     expect_value(__wrap_argp_parse, argc, 2);
     expect_memory(__wrap_argp_parse, argv, &argv, sizeof(argv));
@@ -50,7 +50,7 @@ void parseArgs_argpFails_returnNull(void **state)
 
     args = et_args_parse(argc, argv);
 
-    assert_null(args);
+    assert_int_equal(args.error, 1);
 }
 
 void parseOpt_qEncountered_setSilentFlag(void **state)
@@ -137,8 +137,8 @@ int main(void)
 {
     const struct CMUnitTest tests[] =
     {
-        cmocka_unit_test(parseArgs_argpSucceeds_returnNonNull),
-        cmocka_unit_test(parseArgs_argpFails_returnNull),
+        cmocka_unit_test(parseArgs_argpSucceeds_argsErrorZero),
+        cmocka_unit_test(parseArgs_argpFails_argsErrorOne),
         cmocka_unit_test(parseOpt_qEncountered_setSilentFlag),
         cmocka_unit_test(parseOpt_sEncountered_setSilentFlag),
         cmocka_unit_test(parseOpt_vEncountered_setVerboseFlag),

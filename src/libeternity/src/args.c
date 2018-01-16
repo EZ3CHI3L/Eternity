@@ -48,20 +48,21 @@ error_t parse_opt(int key, char *arg, struct argp_state *state)
     return 0;
 }
 
-struct args *et_args_parse(int argc, char **argv)
+struct args et_args_parse(int argc, char **argv)
 {
     int rv;
     const char* doc = "Eternity - your window to the good";
     char args_doc[] = "file1.jpg file2.png file3.bmp ...";
 
     int file_list_size = argc * sizeof(char*);
-    struct args *args = et_malloc(sizeof(struct args));
-    args->count = argc;
-    args->silent = args->verbose = 0;
-    args->output_file = "-";
-    args->file_count = 0;
-    args->file_list = et_malloc(file_list_size);
-    args->file_list[0] = NULL;
+    struct args args;
+    args.error = 0;
+    args.count = argc;
+    args.silent = args.verbose = 0;
+    args.output_file = "-";
+    args.file_count = 0;
+    args.file_list = et_malloc(file_list_size);
+    args.file_list[0] = NULL;
 
     struct argp_option options[] = {
         {"verbose",'v', 0, 0, "Produce verbose output", 0},
@@ -73,14 +74,15 @@ struct args *et_args_parse(int argc, char **argv)
 
     struct argp argp = {options, parse_opt, args_doc, doc, NULL, 0, NULL};
 
-    rv = argp_parse(&argp, argc, argv, ARGP_NO_EXIT, NULL, args);
+    rv = argp_parse(&argp, argc, argv, ARGP_NO_EXIT, NULL, &args);
 
     if (rv != 0)
     {
         errno = rv;
         perror("argp_parse");
-        et_args_free(args);
-        return NULL;
+        args.error = 1;
+        et_args_free(&args);
+        return args;
     }
 
     return args;

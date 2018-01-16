@@ -204,10 +204,9 @@ int et_engine_run(GLFWwindow *window, et_image *image)
         return 0;
     }
 
-    et_m_stack m_stack;
-    rv = et_m_stack_init(&m_stack);
+    et_m_stack m_stack = et_m_stack_init();
 
-    if (!rv)
+    if (m_stack.error)
         return 0;
 
     glUseProgram(shader);

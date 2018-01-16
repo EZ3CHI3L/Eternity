@@ -13,18 +13,22 @@ void glfw_key_callback(GLFWwindow* window,
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
 
-int et_image_load(et_image *image, const char *filename)
+et_image et_image_load(const char *filename)
 {
-    image->data = stbi_load(filename, &image->width,
-            &image->height, &image->bpp, STBI_rgb_alpha);
+    et_image image;
+    image.error = 0;
+    image.data = stbi_load(filename, &image.width,
+            &image.height, &image.bpp, STBI_rgb_alpha);
 
-    if (!image->data)
+    if (!image.data)
     {
+        image.error = 1;
         fprintf(stderr, "[ STBI ] Could not load image %s\n", filename);
-        return 0;
+        return image;
     }
 
+    image.error = 0;
     printf("[ STBI ] loaded %s\n", filename);
 
-    return 1;
+    return image;
 }

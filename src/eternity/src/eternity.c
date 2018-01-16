@@ -12,16 +12,15 @@ int main(int argc, char **argv)
 {
     int rv;
 
-    struct args *args = et_args_parse(argc, argv);
+    struct args args = et_args_parse(argc, argv);
 
-    if (args == NULL || args->file_list[0] == NULL)
+    if (args.error)
         return EXIT_FAILURE;
 
-    et_image image;
-    rv = et_image_load(&image, args->file_list[0]);
-    if(!rv)
+    et_image image = et_image_load(args.file_list[0]);
+    if(image.error)
     {
-        et_args_free(args);
+        et_args_free(&args);
         return EXIT_FAILURE;
     }
 
@@ -30,17 +29,17 @@ int main(int argc, char **argv)
     if (!rv)
     {
         et_image_free(&image);
-        et_args_free(args);
+        et_args_free(&args);
         return EXIT_FAILURE;
     }
 
     rv = et_engine_run(window, &image);
     if (!rv)
     {
-        et_cleanup(args);
+        et_cleanup(&args);
         return EXIT_FAILURE;
     }
 
-    et_cleanup(args);
+    et_cleanup(&args);
     return EXIT_SUCCESS;
 }

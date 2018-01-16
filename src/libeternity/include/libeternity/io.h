@@ -4,8 +4,8 @@
 typedef struct et_image_struct
 {
     unsigned char *data;
-    int width, height, bpp;
+    int width, height, bpp, error;
 } et_image;
-int et_image_load(et_image*, const char*);
+et_image et_image_load(const char*);
 void glfw_key_callback(GLFWwindow*, int, int, int, int);
 #endif /* IO_H */
