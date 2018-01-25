@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/EZ3CHI3L/Eternity.svg?branch=master)](https://travis-ci.org/EZ3CHI3L/Eternity)
+
 # Eternity
 
 The best image viewer ever made
