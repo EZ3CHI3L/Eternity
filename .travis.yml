@@ -1,0 +1,12 @@
+language: c
+
+services:
+    - docker
+
+before_install:
+    - docker pull ezechiel/eternity-build:latest
+    - docker run -itd --name eternity-build ezechiel/eternity-build
+
+script:
+    - docker exec eternity-build cmake .
+    - docker exec eternity-build make test
