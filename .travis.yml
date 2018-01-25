@@ -1,4 +1,3 @@
-sudo: required
 language: c
 
 services:
@@ -10,5 +9,5 @@ before_install:
 
 script:
     - docker exec eternity cmake -H/eternity -B/build
-    - docker exec eternity --build /build
-    - docker exec eternity --build /build --target test
+    - docker exec eternity cmake --build /build
+    - docker exec eternity cmake --build /build --target test
