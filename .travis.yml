@@ -4,9 +4,10 @@ services:
     - docker
 
 before_install:
-    - docker pull ezechiel/eternity-build:latest
-    - docker run -itd --name eternity-build ezechiel/eternity-build
+    - docker pull ezechiel/eternity:latest
+    - docker run -itd --name eternity ezechiel/eternity
 
 script:
-    - docker exec eternity-build cmake .
-    - docker exec eternity-build make test
+    - docker exec eternity cmake -H/eternity -B/build
+    - docker exec eternity --build /build
+    - docker exec eternity --build /build --target test
