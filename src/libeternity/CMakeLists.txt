@@ -1,4 +1,6 @@
-add_subdirectory(test)
+if(EnableTesting)
+    add_subdirectory(test)
+endif(EnableTesting)
 project(libeternity VERSION ${PACKAGE_VERSION} LANGUAGES C)
 set(sources src/args.c src/error.c src/util.c
     src/engine.c src/io.c src/etmath.c)
