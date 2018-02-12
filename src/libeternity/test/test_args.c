@@ -21,7 +21,7 @@ void __wrap_argp_usage(struct argp_state *state)
 
 void parseArgs_argpSucceeds_argsErrorZero(void **state)
 {
-    int rv, argc = 2;
+    int argc = 2;
     char *argv[argc];
     argv[0] = "eternity";
     argv[1] = "--help";
@@ -38,7 +38,7 @@ void parseArgs_argpSucceeds_argsErrorZero(void **state)
 
 void parseArgs_argpFails_argsErrorOne(void **state)
 {
-    int rv, argc = 2;
+    int argc = 2;
     char *argv[argc];
     argv[0] = "eternity";
     argv[1] = "--help";

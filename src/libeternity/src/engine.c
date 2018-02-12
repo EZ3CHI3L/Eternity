@@ -36,6 +36,9 @@ int et_engine_init(GLFWwindow **window, et_image *image)
     int rv, width = image->width, height = image->height, major, minor, rev;
     GLFWerrorfun callback = glfwSetErrorCallback(glfw_error_callback);
 
+    if (!callback)
+        ERR_LOG("GLFW error callback not set, continuing anyway...");
+
     rv = glfwInit();
     if (rv == GLFW_FALSE)
     {
@@ -50,6 +53,7 @@ int et_engine_init(GLFWwindow **window, et_image *image)
             GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR, GLFW_VERSION_REVISION,
             major, minor, rev);
 
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
@@ -183,12 +187,11 @@ GLuint et_texture_new(et_image *image)
 
 int et_engine_run(GLFWwindow *window, et_image *image)
 {
-    int rv;
     const unsigned char *gl_ver = glGetString(GL_VERSION);
     const unsigned char *glsl_ver = glGetString(GL_SHADING_LANGUAGE_VERSION);
     printf("OpenGL %s\nGLSL %s\n", gl_ver, glsl_ver);
 
-    GLuint vao = et_vao_new();
+    et_vao_new();
 
     GLfloat vc[] = {-1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f};
     GLfloat tc[] = {0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f};
@@ -231,7 +234,7 @@ int et_engine_run(GLFWwindow *window, et_image *image)
     glBindBuffer(GL_ARRAY_BUFFER, tc_buffer);
     glVertexAttribPointer(tc_index, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 
-    GLuint texture = et_texture_new(image);
+    et_texture_new(image);
     et_image_free(image);
 
     et_err_check();

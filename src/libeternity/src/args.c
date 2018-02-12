@@ -35,10 +35,7 @@ error_t parse_opt(int key, char *arg, struct argp_state *state)
 
         case ARGP_KEY_END:
             if (args->count < 2)
-            {
                 argp_usage(state);
-                return 0;
-            }
             break;
 
         default:
@@ -74,7 +71,7 @@ struct args et_args_parse(int argc, char **argv)
 
     struct argp argp = {options, parse_opt, args_doc, doc, NULL, 0, NULL};
 
-    rv = argp_parse(&argp, argc, argv, ARGP_NO_EXIT, NULL, &args);
+    rv = argp_parse(&argp, argc, argv, 0, NULL, &args);
 
     if (rv != 0)
     {
