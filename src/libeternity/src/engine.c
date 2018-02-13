@@ -52,10 +52,8 @@ int et_engine_init(GLFWwindow **window, et_image *image)
     printf("Compiled against GLFW %i.%i.%i\nRunning against GLFW %i.%i.%i\n",
             GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR, GLFW_VERSION_REVISION,
             major, minor, rev);
-
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 
     *window = glfwCreateWindow(width, height, "Eternity", NULL, NULL);
     if (!*window)
@@ -117,20 +115,19 @@ int et_shader_compile(GLenum shader_type, const GLchar *source)
 GLuint et_shader_load(void)
 {
     const GLchar *v_shader_source =
-        "#version 330 core\n"
-        "in vec4 vcoords;"
-        "in vec2 tcoords;"
-        "out vec2 uvcoords;"
+        "#version 120\n"
+        "attribute vec4 vcoords;"
+        "attribute vec2 tcoords;"
+        "varying vec2 uvcoords;"
         "uniform mat4 model, view, projection;"
         "void main() { gl_Position = vcoords * model * view * projection;"
         "uvcoords = tcoords; }";
 
     const GLchar *f_shader_source =
-        "#version 330 core\n"
-        "in vec2 uvcoords;"
-        "out vec4 color;"
+        "#version 120\n"
+        "varying vec2 uvcoords;"
         "uniform sampler2D sampler;"
-        "void main() { color = texture(sampler, uvcoords); }";
+        "void main() { gl_FragColor = texture2D(sampler, uvcoords); }";
 
     GLuint vs = et_shader_compile(GL_VERTEX_SHADER, v_shader_source);
 
@@ -238,6 +235,7 @@ int et_engine_run(GLFWwindow *window, et_image *image)
     et_image_free(image);
 
     et_err_check();
+
     while (!glfwWindowShouldClose(window))
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
