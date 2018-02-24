@@ -34,10 +34,7 @@ void glfw_framebuffer_size_callback(GLFWwindow *window,
 int et_engine_init(GLFWwindow **window, et_image *image)
 {
     int rv, width = image->width, height = image->height, major, minor, rev;
-    GLFWerrorfun callback = glfwSetErrorCallback(glfw_error_callback);
-
-    if (!callback)
-        ERR_LOG("GLFW error callback not set, continuing anyway...");
+    glfwSetErrorCallback(glfw_error_callback);
 
     rv = glfwInit();
     if (rv == GLFW_FALSE)
